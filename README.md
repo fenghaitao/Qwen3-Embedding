@@ -1,4 +1,4 @@
-# Qwen3 Embedding
+
 
 <p align="center">
     <img src="https://qianwen-res.oss-accelerate.aliyuncs.com/logo_qwen_embedding.png" width="400"/>
@@ -8,6 +8,7 @@
    &nbsp&nbsp <a href="https://huggingface.co/Qwen">Huggingface</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://modelscope.cn/organization/qwen">ModelScope</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://qwenlm.github.io/blog/qwen3-embedding/">Blog</a> &nbsp&nbsp | &nbsp&nbsp <a href="https://bailian.console.aliyun.com/?tab=model#/model-market/detail/text-embedding-v4">API</a> ｜ &nbsp&nbsp <a href="https://discord.gg/yPEP2vHTu4">Discord</a>
 </p>
 
+# Qwen3 Embedding
 
 ## Highlights
 The Qwen3 Embedding series model is the latest proprietary model of the Qwen family, specifically designed for text embedding and ranking tasks. Building upon the dense foundational models of the Qwen3 series, it provides a comprehensive range of text embeddings and reranking models in various sizes (0.6B, 4B, and 8B). This series inherits the exceptional multilingual capabilities, long-text understanding, and reasoning skills of its foundational model. The Qwen3 Embedding series represents significant advancements in multiple text embedding and ranking tasks, including text retrieval, code retrieval, text classification, text clustering, and bitext mining.
