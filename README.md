@@ -5,7 +5,7 @@
 <p>
 
 <p align="center">
-    &nbsp&nbsp🤗 <a href="https://huggingface.co/collections/Qwen/qwen25-coder-66eaa22e6f99801bf65b0c2f">Hugging Face</a>&nbsp&nbsp | &nbsp&nbsp🤖 <a href="https://modelscope.cn/organization/qwen">ModelScope</a>&nbsp&nbsp | &nbsp&nbsp 📑 <a href="https://qwenlm.github.io/blog/qwen3-embedding-family">Blog</a> &nbsp&nbsp ｜ &nbsp&nbsp 📄<a href="https://arxiv.org/abs/2409.12186">Arxiv</a>&nbsp&nbsp | &nbsp&nbsp ⚙️ <a href="https://bailian.console.aliyun.com/?tab=model#/model-market/detail/text-embedding-v4">DashScope</a>
+   &nbsp&nbsp <a href="https://huggingface.co/Qwen">Huggingface</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://modelscope.cn/organization/qwen">ModelScope</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://qwenlm.github.io/blog/qwen3-embedding/">Blog</a> &nbsp&nbsp | &nbsp&nbsp <a href="https://bailian.console.aliyun.com/?tab=model#/model-market/detail/text-embedding-v4">API</a> ｜ &nbsp&nbsp <a href="https://discord.gg/yPEP2vHTu4">Discord</a>
 </p>
 
 
