@@ -256,7 +256,7 @@ scores = compute_logits(inputs)
 print("scores: ", scores)
 ```
 
-### vLLM Usage 
+#### vLLM Usage 
 
 ```python
 # Requires vllm>=0.8.5
