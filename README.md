@@ -110,7 +110,8 @@ embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_ma
 embeddings = F.normalize(embeddings, p=2, dim=1)
 scores = (embeddings[:2] @ embeddings[2:].T)
 print(scores.tolist())
-# [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+# [[0.7645568251609802, 0.14142508804798126],
+[0.13549736142158508, 0.5999549627304077]]
 ```
 
 #### vLLM Usage 
@@ -143,6 +144,8 @@ outputs = model.embed(input_texts)
 embeddings = torch.tensor([o.outputs.embedding for o in outputs])
 scores = (embeddings[:2] @ embeddings[2:].T)
 print(scores.tolist())
+[[0.7620252966880798, 0.14078938961029053],
+[0.1358368694782257, 0.6013815999031067]]
 ```
 
 #### Sentence Transformers Usage
