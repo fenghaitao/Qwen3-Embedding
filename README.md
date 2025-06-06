@@ -5,7 +5,7 @@
 <p>
 
 <p align="center">
-   &nbsp&nbsp <a href="https://huggingface.co/collections/Qwen/qwen3-embedding-6841b2055b99c44d9a4c371f">Huggingface</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://modelscope.cn/collections/Qwen3-Embedding-3edc3762d50f48">ModelScope</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://qwenlm.github.io/blog/qwen3-embedding/">Blog</a> &nbsp&nbsp | &nbsp&nbsp <a href="https://bailian.console.aliyun.com/?tab=model#/model-market/detail/text-embedding-v4">API</a> ｜ &nbsp&nbsp <a href="https://discord.gg/yPEP2vHTu4">Discord</a>
+   &nbsp&nbsp <a href="https://huggingface.co/collections/Qwen/qwen3-embedding-6841b2055b99c44d9a4c371f">Huggingface</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://modelscope.cn/collections/Qwen3-Embedding-3edc3762d50f48">ModelScope</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://qwenlm.github.io/blog/qwen3-embedding/">Blog</a> &nbsp&nbsp | &nbsp&nbsp <a href="https://arxiv.org/abs/2506.05176">Arxiv</a> &nbsp&nbsp | &nbsp&nbsp <a href="https://bailian.console.aliyun.com/?tab=model#/model-market/detail/text-embedding-v4">API</a> ｜ &nbsp&nbsp <a href="https://discord.gg/yPEP2vHTu4">Discord</a> 
 </p>
 
 # Qwen3 Embedding
@@ -421,11 +421,10 @@ The code for reproducing the following results is available in the [evaluation](
 If you find our work helpful, feel free to give us a cite.
 
 ```
-@misc{qwen3-embedding,
-    title  = {Qwen3-Embedding},
-    url    = {https://qwenlm.github.io/blog/qwen3/},
-    author = {Qwen Team},
-    month  = {May},
-    year   = {2025}
+@article{qwen3embedding,
+  title={Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models},
+  author={Zhang, Yanzhao and Li, Mingxin and Long, Dingkun and Zhang, Xin and Lin, Huan and Yang, Baosong and Xie, Pengjun and Yang, An and Liu, Dayiheng and Lin, Junyang and Huang, Fei and Zhou, Jingren},
+  journal={arXiv preprint arXiv:2506.05176},
+  year={2025}
 }
 ```
