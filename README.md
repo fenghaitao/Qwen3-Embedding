@@ -1,27 +1,29 @@
-# Qwen3 Embedding
+
 
 <p align="center">
     <img src="https://qianwen-res.oss-accelerate.aliyuncs.com/logo_qwen_embedding.png" width="400"/>
 <p>
 
 <p align="center">
-    &nbsp&nbsp🤗 <a href="https://huggingface.co/collections/Qwen/qwen25-coder-66eaa22e6f99801bf65b0c2f">Hugging Face</a>&nbsp&nbsp | &nbsp&nbsp🤖 <a href="https://modelscope.cn/organization/qwen">ModelScope</a>&nbsp&nbsp | &nbsp&nbsp 📑 <a href="https://qwenlm.github.io/blog/qwen3-embedding-family">Blog</a> &nbsp&nbsp ｜ &nbsp&nbsp 📄<a href="https://arxiv.org/abs/2409.12186">Arxiv</a>&nbsp&nbsp | &nbsp&nbsp ⚙️ <a href="https://bailian.console.aliyun.com/?tab=model#/model-market/detail/text-embedding-v4">DashScope</a>
+   &nbsp&nbsp <a href="https://huggingface.co/collections/Qwen/qwen3-embedding-6841b2055b99c44d9a4c371f">Huggingface</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://modelscope.cn/collections/Qwen3-Embedding-3edc3762d50f48">ModelScope</a>&nbsp&nbsp | &nbsp&nbsp <a href="https://qwenlm.github.io/blog/qwen3-embedding/">Blog</a> &nbsp&nbsp | &nbsp&nbsp <a href="https://bailian.console.aliyun.com/?tab=model#/model-market/detail/text-embedding-v4">API</a> ｜ &nbsp&nbsp <a href="https://discord.gg/yPEP2vHTu4">Discord</a>
 </p>
 
+# Qwen3 Embedding
 
 ## Highlights
-The Qwen3 Embedding series model is the latest proprietary model of the Qwen family, specifically designed for text embedding and ranking tasks. Building upon the dense foundational models of the Qwen3 series, it provides a comprehensive range of text embeddings and reranking models in various sizes (0.6B, 4B, and 8B). This series inherits the exceptional multilingual capabilities, long-text understanding, and reasoning skills of its foundational model. The Qwen3 Embedding series represents significant advancements in multiple text embedding and ranking tasks, including text retrieval, code retrieval, text classification, text clustering, and bitext mining.
 
-**Exceptional Versatility**: The embedding model has achieved state-of-the-art performance across a wide range of downstream application evaluations. The 8B size embedding model ranks No.1 in the MTEB multilingual leaderboard (as of June 6, 2025, score 70.58), while the reranking model excels in various text retrieval scenarios.
+The Qwen3 Embedding model series is the latest proprietary model of the Qwen family, specifically designed for text embedding and ranking tasks. Building upon the dense foundational models of the Qwen3 series, it provides a comprehensive range of text embeddings and reranking models in various sizes (0.6B, 4B, and 8B). This series inherits the exceptional multilingual capabilities, long-text understanding, and reasoning skills of its foundational model. The Qwen3 Embedding series represents significant advancements in multiple text embedding and ranking tasks, including text retrieval, code retrieval, text classification, text clustering, and bitext mining.
+
+**Exceptional Versatility**: The embedding model has achieved state-of-the-art performance across a wide range of downstream application evaluations. The 8B size embedding model ranks **No.1** in the MTEB multilingual leaderboard (as of June 5, 2025, score **70.58**), while the reranking model excels in various text retrieval scenarios.
 
 **Comprehensive Flexibility**: The Qwen3 Embedding series offers a full spectrum of sizes (from 0.6B to 8B) for both embedding and reranking models, catering to diverse use cases that prioritize efficiency and effectiveness. Developers can seamlessly combine these two modules. Additionally, the embedding model allows for flexible vector definitions across all dimensions, and both embedding and reranking models support user-defined instructions to enhance performance for specific tasks, languages, or scenarios.
 
-**Multilingual Capability**: The Qwen3 Embedding series support over 100 languages, including various programming languages, and provides robust multilingual, cross-lingual, and code retrieval capabilities.
+**Multilingual Capability**: The Qwen3 Embedding series offer support for over 100 languages, thanks to the multilingual capabilites of Qwen3 models. This includes various programming languages, and provides robust multilingual, cross-lingual, and code retrieval capabilities.
 
 
 ## Qwen3 Embedding Series Model list
 
-| Model Type       | Models               | Size | Layers | Sequence Length | Embedding Dimension | MRL Support | Instruct Aware |
+| Model Type       | Models               | Size | Layers | Sequence Length | Embedding Dimension | MRL Support | Instruction Aware |
 |------------------|----------------------|------|--------|-----------------|---------------------|-------------|----------------|
 | Text Embedding   | [Qwen3-Embedding-0.6B](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B) | 0.6B | 28     | 32K             | 1024                | Yes         | Yes            |
 | Text Embedding   | [Qwen3-Embedding-4B](https://huggingface.co/Qwen/Qwen3-Embedding-4B)   | 4B   | 36     | 32K             | 2560                | Yes         | Yes            |
