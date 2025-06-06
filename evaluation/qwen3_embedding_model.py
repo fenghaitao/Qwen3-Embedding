@@ -29,7 +29,6 @@ class TransformersTextEmbedder(torch.nn.Module):
         do_norm: bool = False,
         truncate_dim: int = 0,
         padding_left: bool = False,
-        add_eos_id: bool = False,
         attn_type: str = 'causal',
         **kwargs,
     ):
@@ -41,11 +40,7 @@ class TransformersTextEmbedder(torch.nn.Module):
         self.do_norm = do_norm
         self.truncate_dim = truncate_dim
         self.padding_left = padding_left
-        self.add_eos_id = add_eos_id
-        self.eos_id = self.tokenizer.pad_token_id if add_eos_id else None
         self.attn_type = attn_type
-        self.encode_kwargs = dict(add_special_tokens=not add_eos_id, truncation=True, return_token_type_ids=False)
-        self.pad_kwargs = dict(padding=True, return_tensors='pt')
         if pooler_type == 'first':
             assert padding_left is False
             self.pooling = self._pooling_first
@@ -72,28 +67,8 @@ class TransformersTextEmbedder(torch.nn.Module):
 
     def tokenize(self, texts, max_length: int, prompt=None) -> BatchEncoding:
         if prompt:
-            texts = [prompt + t for t in texts]
-        if self.eos_id is None:
-            inputs = self.tokenizer(
-                texts, max_length=max_length, **self.encode_kwargs, **self.pad_kwargs
-            )
-        else:
-            
-            batch_tokens = self.tokenizer(texts, padding=False, truncation=True, max_length=max_length-1)
-            if 'token_type_ids' in batch_tokens:
-                for seq, tid, att in zip(batch_tokens["input_ids"], batch_tokens["token_type_ids"],  batch_tokens["attention_mask"]):
-                    seq.append(self.eos_id)
-                    tid.append(0)
-                    att.append(1)
-            else:
-                for seq, att in zip(batch_tokens["input_ids"], batch_tokens["attention_mask"]):
-                    seq.append(self.eos_id)
-                    att.append(1)
-            inputs = self.tokenizer.pad(batch_tokens, padding=True, max_length=max_length+1, return_tensors="pt")
-
-
-            if self.attn_type == 'bi':
-                inputs['is_causal'] = False
+            texts = [prompt + t for t in texts] 
+        inputs = self.tokenizer(texts, padding=True, truncation=True, max_length=max_length, return_tensors='pt')
         return inputs
 
     def forward(

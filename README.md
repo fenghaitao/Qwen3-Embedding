@@ -44,7 +44,7 @@ KeyError: 'qwen3'
 ```
 ### Embedding Model
 
-### Transformers Usage
+#### Transformers Usage
 
 ```python
 # Requires transformers>=4.51.0
@@ -70,13 +70,56 @@ def last_token_pool(last_hidden_states: Tensor,
 def get_detailed_instruct(task_description: str, query: str) -> str:
     return f'Instruct: {task_description}\nQuery:{query}'
 
-def tokenize(tokenizer, input_texts, eod_id, max_length):
-    batch_dict = tokenizer(input_texts, padding=False, truncation=True, max_length=max_length-2)
-    for seq, att in zip(batch_dict["input_ids"], batch_dict["attention_mask"]):
-        seq.append(eod_id)
-        att.append(1)
-    batch_dict = tokenizer.pad(batch_dict, padding=True, return_tensors="pt")
-    return batch_dict
+# Each query must come with a one-sentence instruction that describes the task
+task = 'Given a web search query, retrieve relevant passages that answer the query'
+
+queries = [
+    get_detailed_instruct(task, 'What is the capital of China?'),
+    get_detailed_instruct(task, 'Explain gravity')
+]
+# No need to add instruction for retrieval documents
+documents = [
+    "The capital of China is Beijing.",
+    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
+]
+input_texts = queries + documents
+
+tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
+model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
+
+# We recommend enabling flash_attention_2 for better acceleration and memory saving.
+# model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
+
+max_length = 8192
+
+# Tokenize the input texts
+batch_dict = tokenizer(
+    input_texts,
+    padding=True,
+    truncation=True,
+    max_length=max_length,
+    return_tensors="pt",
+)
+batch_dict.to(model.device)
+outputs = model(**batch_dict)
+embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+
+# normalize embeddings
+embeddings = F.normalize(embeddings, p=2, dim=1)
+scores = (embeddings[:2] @ embeddings[2:].T)
+print(scores.tolist())
+# [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+```
+
+#### vLLM Usage 
+```python
+# Requires vllm>=0.8.5
+import torch
+import vllm
+from vllm import LLM
+
+def get_detailed_instruct(task_description: str, query: str) -> str:
+    return f'Instruct: {task_description}\nQuery:{query}'
 
 # Each query must come with a one-sentence instruction that describes the task
 task = 'Given a web search query, retrieve relevant passages that answer the query'
@@ -92,27 +135,53 @@ documents = [
 ]
 input_texts = queries + documents
 
-tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-8B', padding_side='left')
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-8B')
+model = LLM(model="Qwen/Qwen3-Embedding-0.6B", task="embed")
 
-# We recommend enabling flash_attention_2 for better acceleration and memory saving.
-# model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-8B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
-
-eod_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
-max_length = 8192
-
-# Tokenize the input texts
-batch_dict = tokenize(tokenizer, input_texts, eod_id, max_length)
-batch_dict.to(model.device)
-outputs = model(**batch_dict)
-embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
-
-# normalize embeddings
-embeddings = F.normalize(embeddings, p=2, dim=1)
+outputs = model.embed(input_texts)
+embeddings = torch.tensor([o.outputs.embedding for o in outputs])
 scores = (embeddings[:2] @ embeddings[2:].T)
 print(scores.tolist())
 ```
 
+#### Sentence Transformers Usage
+```python
+# Requires transformers>=4.51.0
+
+from sentence_transformers import SentenceTransformer
+
+# Load the model
+model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+
+# We recommend enabling flash_attention_2 for better acceleration and memory saving,
+# together with setting `padding_side` to "left":
+# model = SentenceTransformer(
+#     "Qwen/Qwen3-Embedding-0.6B",
+#     model_kwargs={"attn_implementation": "flash_attention_2", "device_map": "auto"},
+#     tokenizer_kwargs={"padding_side": "left"},
+# )
+
+# The queries and documents to embed
+queries = [
+    "What is the capital of China?",
+    "Explain gravity",
+]
+documents = [
+    "The capital of China is Beijing.",
+    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
+]
+
+# Encode the queries and documents. Note that queries benefit from using a prompt
+# Here we use the prompt called "query" stored under `model.prompts`, but you can
+# also pass your own prompt via the `prompt` argument
+query_embeddings = model.encode(queries, prompt_name="query")
+document_embeddings = model.encode(documents)
+
+# Compute the (cosine) similarity between the query and document embeddings
+similarity = model.similarity(query_embeddings, document_embeddings)
+print(similarity)
+# tensor([[0.7646, 0.1414],
+#         [0.1355, 0.6000]])
+```
 ### Reranker Model
 
 #### Transformers Usage

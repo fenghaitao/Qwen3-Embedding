@@ -23,7 +23,6 @@ class Qwen3Embedding():
         if use_cuda:
             self.model = self.model.cuda()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True, padding_side='left')
-        self.eod_id = self.tokenizer.convert_tokens_to_ids("<|endoftext|>")
         self.max_length=max_length
     
     def last_token_pool(self, last_hidden_states: Tensor,
@@ -36,17 +35,6 @@ class Qwen3Embedding():
             batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
 
-    def tokenize(self, sentences):
-        batch_tokens = self.tokenizer(sentences, padding=False, truncation=True, max_length=self.max_length-2)
-        for seq, att in zip(batch_tokens["input_ids"], batch_tokens["attention_mask"]):
-            seq.append(self.eod_id)
-            att.append(1)
-        batch_tokens = self.tokenizer.pad(batch_tokens, padding=True, return_tensors="pt").to("cuda")
-        for key in batch_tokens:
-            if isinstance(batch_tokens[key], torch.Tensor):
-                batch_tokens[key] = batch_tokens[key].to(self.model.device)
-        return batch_tokens
-
     def get_detailed_instruct(self, task_description: str, query: str) -> str:
         if task_description is None:
             task_description = self.instruction
@@ -57,7 +45,8 @@ class Qwen3Embedding():
             sentences = [sentences]
         if is_query:
             sentences = [self.get_detailed_instruct(instruction, sent) for sent in sentences]
-        inputs = self.tokenize(sentences=sentences)
+        inputs = self.tokenizer(sentences, padding=True, truncation=True, max_length=self.max_length, return_tensors='pt')
+        inputs.to(self.model.device)
         model_outputs = self.model(**inputs)
         output = self.last_token_pool(model_outputs.last_hidden_state, inputs['attention_mask'])
         if dim != -1:
@@ -74,7 +63,6 @@ if __name__ == "__main__":
         "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
     ]
     query_outputs = model.encode(queries, is_query=True)
-    # exit()
     doc_outputs = model.encode(documents)
     print('query outputs', query_outputs)
     print('doc outputs', doc_outputs)

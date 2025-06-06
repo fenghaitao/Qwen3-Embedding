@@ -11,7 +11,7 @@ python run_mteb.py \
   --model ${model_path} \
   --model_name ${model_name} \
   --precision fp16 \
-   --model_kwargs "{\"max_length\": 8192, \"attn_type\": \"causal\", \"pooler_type\": \"last\", \"do_norm\": true, \"add_eos_id\": true, \"use_instruction\": true, \"instruction_template\": \"Instruct: {}\nQuery:\", \"instruction_dict_path\": \"task_prompts.json\", \"trust_remote_code\": true, \"attn_implementation\":\"flash_attention_2\"}" \
+  --model_kwargs "{\"max_length\": 8192, \"attn_type\": \"causal\", \"pooler_type\": \"last\", \"do_norm\": true, \"use_instruction\": true, \"instruction_template\": \"Instruct: {}\nQuery:\", \"instruction_dict_path\": \"task_prompts.json\", \"attn_implementation\":\"flash_attention_2\"}" \
   --run_kwargs "{\"save_predictions\": \"true\"}" \
   --output_dir results/${model_name} \
   --batch_size 8 \
