@@ -3,6 +3,7 @@ from typing import Dict, Optional, List, Union
 import torch
 import vllm
 from vllm import LLM
+from vllm.distributed.parallel_state import destroy_model_parallel
 
 class Qwen3EmbeddingVllm():
     def __init__(self, model_name_or_path, instruction=None, max_length=8192):
