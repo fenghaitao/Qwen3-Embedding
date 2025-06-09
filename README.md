@@ -33,10 +33,31 @@ The Qwen3 Embedding model series is the latest proprietary model of the Qwen fam
 | Text Reranking   | [Qwen3-Reranker-8B](https://huggingface.co/Qwen/Qwen3-Reranker-8B)   | 8B   | 36     | 32K             | -                   | -           | Yes            |
 
 > **Note**:
-> - `MRL Support` indicates whether the embedding model supports custom dimensions for the final embedding. 
-> - `Instruct Aware` notes whether the embedding or reranking model supports customizing the input instruction according to different tasks.
+> - `MRL (Matryoshka Representation Learning) Support` indicates whether the embedding model supports custom dimensions for the final embedding. 
+> - `Instruction Aware` notes whether the embedding or reranking model supports customizing the input instruction according to different tasks.
 > - Our evaluation indicates that, for most downstream tasks, using instructions (instruct) typically yields an improvement of 1% to 5% compared to not using them. Therefore, we recommend that developers create tailored instructions specific to their tasks and scenarios. In multilingual contexts, we also advise users to write their instructions in English, as most instructions utilized during the model training process were originally written in English.
 
+### Multilingual Support
+
+Qwen3-Embedding model series shares the multilingual support capabilities of the Qwen3 base model. 
+
+<details>
+<summary>Click to expand the list of supported languages</summary>
+
+| Language Family | Languages & Dialects |
+|---|---|
+| Indo-European | English, French, Portuguese, German, Romanian, Swedish, Danish, Bulgarian, Russian, Czech, Greek, Ukrainian, Spanish, Dutch, Slovak, Croatian, Polish, Lithuanian, Norwegian Bokmål, Norwegian Nynorsk, Persian, Slovenian, Gujarati, Latvian, Italian, Occitan, Nepali, Marathi, Belarusian, Serbian, Luxembourgish, Venetian, Assamese, Welsh, Silesian, Asturian, Chhattisgarhi, Awadhi, Maithili, Bhojpuri, Sindhi, Irish, Faroese, Hindi, Punjabi, Bengali, Oriya, Tajik, Eastern Yiddish, Lombard, Ligurian, Sicilian, Friulian, Sardinian, Galician, Catalan, Icelandic, Tosk Albanian, Limburgish, Dari, Afrikaans, Macedonian, Sinhala, Urdu, Magahi, Bosnian, Armenian |
+| Sino-Tibetan | Chinese (Simplified Chinese, Traditional Chinese, Cantonese), Burmese |
+| Afro-Asiatic | Arabic (Standard, Najdi, Levantine, Egyptian, Moroccan, Mesopotamian, Ta'izzi-Adeni, Tunisian), Hebrew, Maltese |
+| Austronesian | Indonesian, Malay, Tagalog, Cebuano, Javanese, Sundanese, Minangkabau, Balinese, Banjar, Pangasinan, Iloko, Waray (Philippines)  |
+| Dravidian | Tamil, Telugu, Kannada, Malayalam |
+| Turkic | Turkish, North Azerbaijani, Northern Uzbek, Kazakh, Bashkir, Tatar |
+| Tai-Kadai | Thai, Lao |
+| Uralic | Finnish, Estonian, Hungarian |
+| Austroasiatic | Vietnamese, Khmer |
+| Other | Japanese, Korean, Georgian, Basque, Haitian, Papiamento, Kabuverdianu, Tok Pisin, Swahili | 
+
+</details>
 
 ## Usage
 
@@ -149,6 +170,7 @@ print(scores.tolist())
 #### Sentence Transformers Usage
 ```python
 # Requires transformers>=4.51.0
+# Requires sentence-transformers>=2.7.0
 
 from sentence_transformers import SentenceTransformer
 
@@ -409,7 +431,7 @@ The code for reproducing the following results is available in the [evaluation](
 | gte-multilingual-reranker-base                      | 0.3B   | 59.51   | 74.08   | 59.44   | 66.33  | 54.18     | -1.64    |
 | BGE-reranker-v2-m3                 | 0.6B   | 57.03   | 72.16   | 58.36   | 59.51  | 41.38     | -0.01    |
 | **Qwen3-Reranker-0.6B**                | 0.6B   | 65.80   | 71.31   | 66.36   | 67.28  | 73.42     | 5.41     |
-| **Qwen3-Reranker-4B**                  | 1.7B   | **69.76** | 75.94   | 72.74   | 69.97  | 81.20     | **14.84** |
+| **Qwen3-Reranker-4B**                  | 4B   | **69.76** | 75.94   | 72.74   | 69.97  | 81.20     | **14.84** |
 | **Qwen3-Reranker-8B**                  | 8B     | 69.02   | **77.45** | **72.94** | **70.19** | **81.22** | 8.05     |
 
 > **Note**:  
