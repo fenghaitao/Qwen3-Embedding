@@ -47,11 +47,12 @@ class Qwen3Embedding():
             sentences = [self.get_detailed_instruct(instruction, sent) for sent in sentences]
         inputs = self.tokenizer(sentences, padding=True, truncation=True, max_length=self.max_length, return_tensors='pt')
         inputs.to(self.model.device)
-        model_outputs = self.model(**inputs)
-        output = self.last_token_pool(model_outputs.last_hidden_state, inputs['attention_mask'])
-        if dim != -1:
-            output = output[:, :dim]
-        output  = F.normalize(output, p=2, dim=1)
+        with torch.no_grad():
+            model_outputs = self.model(**inputs)
+            output = self.last_token_pool(model_outputs.last_hidden_state, inputs['attention_mask'])
+            if dim != -1:
+                output = output[:, :dim]
+            output  = F.normalize(output, p=2, dim=1)
         return output
 
 if __name__ == "__main__":
@@ -62,8 +63,9 @@ if __name__ == "__main__":
         "The capital of China is Beijing.",
         "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
     ]
-    query_outputs = model.encode(queries, is_query=True)
-    doc_outputs = model.encode(documents)
+    dim = 1024
+    query_outputs = model.encode(queries, is_query=True, dim=dim)
+    doc_outputs = model.encode(documents, dim=dim)
     print('query outputs', query_outputs)
     print('doc outputs', doc_outputs)
     scores = (query_outputs @ doc_outputs.T) * 100
