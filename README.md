@@ -372,6 +372,10 @@ destroy_model_parallel()
 
 For more usage examples, see the code in the [examples]() sections.
 
+## Training
+
+The code and instructions for training Qwen3-Embedding models can be found in the [training docs](docs/training).
+
 ## Evaluation
 
 The code for reproducing the following results is available in the [evaluation]() section.
