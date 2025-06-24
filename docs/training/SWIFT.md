@@ -25,7 +25,9 @@ pip install liger-kernel # save GPU memory resources
 pip install flash-attn --no-build-isolation
 ```
 
-## Data Preparation
+## Embedding Training
+
+### Data Preparation
 
 Different loss types affect the dataset input format. Using the following data format as an example:
 
@@ -38,7 +40,7 @@ Different loss types affect the dataset input format. Using the following data f
 
 The above data format is used when the loss is `infonce`. This loss uses `response (positive)` and `query (anchor)` for positive training, and uses `rejected_response (negatives)` for negative training.
 
-## Loss Types
+### Loss Types
 
 It is recommended to use infonce loss (`--loss_type infonce`) for training.
 Infonce loss has several adjustable environment variables:
@@ -60,7 +62,7 @@ Under this loss, the label field is a float type marking the similarity value be
 
 Other types of losses are also supported. A complete introduction to losses and data formats can be found [here](https://github.com/modelscope/ms-swift/blob/main/docs/source_en/BestPractices/Embedding.md).
 
-## Complete Training Command
+### Complete Training Command
 
 Using infonce loss as an example, the complete training command is as follows:
 
@@ -89,18 +91,71 @@ swift sft \
     --deepspeed zero3
 ```
 
-If you use LoRA for training(`--train_type lora`), you can use SWIFT to merge the LoRA weights back into the model for inference:
+## Reranker Training
+
+### Data Preparation
+
+The original data format:
+
+```json
+{"query": "query", "positive": ["sentence1-positive", "sentence2-positive", ...], "negative": ["sentence1-negative", "sentence2-negative", ...]}
+```
+
+The processed data format:
+
+```json
+{"query": "query", "response": "sentence1-positive", "rejected_response": ["sentence1-negative", "sentence2-negative", ...]}
+{"query": "query", "response": "sentence2-positive", "rejected_response": ["sentence1-negative", "sentence2-negative", ...]}
+...
+```
+
+### Loss Types
+
+SWIFT supports two loss types for reranker training: pointwise loss and listwise loss.
+
+#### Pointwise Loss
+Treats ranking as binary classification for each query-document pair:
+- **Loss Function**: Binary cross-entropy
+- **Approach**: Independent judgment for each pair
+- **Environment Variables**:
+  - `GENERATIVE_RERANKER_POSITIVE_TOKEN`: Positive token (default: "yes")
+  - `GENERATIVE_RERANKER_NEGATIVE_TOKEN`: Negative token (default: "no")
+
+#### Listwise Loss
+Treats ranking as multi-classification among candidate documents:
+- **Loss Function**: Multi-class cross-entropy
+- **Approach**: Learn relative ranking relationships
+- **Environment Variables**:
+  - `LISTWISE_GENERATIVE_RERANKER_TEMPERATURE`: Listwise temperature (default: 1.0)
+  - `LISTWISE_GENERATIVE_RERANKER_MIN_GROUP_SIZE`: Minimum group size (default: 2)
+
+### Complete Training Command
+
+Example for training a Qwen3-Reranker model using pointwise loss:
 
 ```shell
-swift export --adapters /path/of/output/ckpt-xxx --merge_lora true
+nproc_per_node=4
+NPROC_PER_NODE=$nproc_per_node \
+swift sft \
+    --model Qwen/Qwen3-Reranker-4B \
+    --task_type generative_reranker \
+    --loss_type generative_reranker \
+    --train_type full \
+    --dataset MTEB/scidocs-reranking \
+    --split_dataset_ratio 0.05 \
+    --eval_strategy steps \
+    --output_dir output \
+    --eval_steps 100 \
+    --num_train_epochs 1 \
+    --save_steps 200 \
+    --per_device_train_batch_size 2 \
+    --per_device_eval_batch_size 2 \
+    --gradient_accumulation_steps 8 \
+    --learning_rate 6e-6 \
+    --label_names labels \
+    --dataloader_drop_last true
 ```
 
 ## Inference and Deployment
 
 SWIFT's support for inference and deployment of the Qwen3-Embedding series models is currently under development. In the meantime, users can directly use the [inference code from the ModelCard](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B#sentence-transformers-usage).
-
-## Some Code Addresses
-
-1. [Embedding dataset encode](https://github.com/modelscope/ms-swift/blob/main/swift/llm/template/base.py#L338)
-2. [Embedding dataset data collator](https://github.com/modelscope/ms-swift/blob/main/swift/llm/template/base.py#L1313)
-3. [Embedding loss](https://github.com/modelscope/ms-swift/blob/main/swift/plugin/loss.py#L272)
