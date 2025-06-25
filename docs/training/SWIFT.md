@@ -126,8 +126,8 @@ Treats ranking as multi-classification among candidate documents:
 - **Loss Function**: Multi-class cross-entropy
 - **Approach**: Learn relative ranking relationships
 - **Environment Variables**:
-  - `LISTWISE_GENERATIVE_RERANKER_TEMPERATURE`: Listwise temperature (default: 1.0)
-  - `LISTWISE_GENERATIVE_RERANKER_MIN_GROUP_SIZE`: Minimum group size (default: 2)
+  - `LISTWISE_RERANKER_TEMPERATURE`: Listwise temperature (default: 1.0)
+  - `LISTWISE_RERANKER_MIN_GROUP_SIZE`: Minimum group size (default: 2)
 
 ### Complete Training Command
 
