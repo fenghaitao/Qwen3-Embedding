@@ -25,7 +25,8 @@ pip install liger-kernel # save GPU memory resources
 pip install flash-attn --no-build-isolation
 ```
 
-## Data Preparation
+## Embedding Training
+### Data Preparation
 
 Different loss types affect the dataset input format. Using the following data format as an example:
 
@@ -38,7 +39,7 @@ Different loss types affect the dataset input format. Using the following data f
 
 The above data format is used when the loss is `infonce`. This loss uses `response (positive)` and `query (anchor)` for positive training, and uses `rejected_response (negatives)` for negative training.
 
-## Loss Types
+### Loss Types
 
 It is recommended to use infonce loss (`--loss_type infonce`) for training.
 Infonce loss has several adjustable environment variables:
@@ -60,7 +61,7 @@ Under this loss, the label field is a float type marking the similarity value be
 
 Other types of losses are also supported. A complete introduction to losses and data formats can be found [here](https://github.com/modelscope/ms-swift/blob/main/docs/source_en/BestPractices/Embedding.md).
 
-## Complete Training Command
+### Complete Training Command
 
 Using infonce loss as an example, the complete training command is as follows:
 
@@ -88,6 +89,56 @@ swift sft \
     --dataloader_drop_last true \
     --deepspeed zero3
 ```
+
+## Reranker Training (LoRA)
+### Data Preparation
+
+The original data format:
+
+```json
+{"query": "sentence1", "response": "sentence1-positive", "rejected_response":  ["sentence1-negative1", "sentence1-negative2", ...]}
+```
+The processed data format:
+```json
+{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence1 \n<Document>: sentence1-positive ", "output": "<think>\n\n</think>\n\nyes"}
+{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence1 \n<Document>: sentence1-negative1 ", "output": "<think>\n\n</think>\n\nno"}
+{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence1 \n<Document>: sentence1-negative2 ", "output": "<think>\n\n</think>\n\nno"}
+{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence2 \n<Document>: sentence2-positive ", "output": "<think>\n\n</think>\n\nyes"}
+{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence2 \n<Document>: sentence2-negative1 ", "output": "<think>\n\n</think>\n\nno"}
+{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence2 \n<Document>: sentence2-negative2 ", "output": "<think>\n\n</think>\n\nno"}
+...
+```
+### Complete Training Command
+
+The complete training command is as follows:
+```shell
+nproc_per_node=8
+NPROC_PER_NODE=$nproc_per_node \
+swift sft \
+    --model Qwen/Qwen3-Reranker-0.6 \
+    --dataset /path/data/qwen3_rerank.json \
+    --train_type lora \
+    --model_type qwen3 \
+    --split_dataset_ratio 0.05 \
+    --torch_dtype bfloat16 \
+    --lora_rank 8 \
+    --lora_alpha 32 \
+    --target_modules all-linear \
+    --eval_strategy steps \
+    --output_dir output \
+    --max_steps 1000 \
+    --eval_steps 100 \
+    --num_train_epochs 4 \
+    --save_steps 100 \
+    --per_device_train_batch_size 4 \
+    --per_device_eval_batch_size 4 \
+    --gradient_accumulation_steps 4 \
+    --learning_rate 6e-6 \
+    --loss_scale ignore_empty_think \
+    --system 'Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".' \
+    --warmup_ratio 0.05 
+```
+The `qwen3_rank.json` file is the data file obtained after processing in the Data Preparation stage.
 
 If you use LoRA for training(`--train_type lora`), you can use SWIFT to merge the LoRA weights back into the model for inference:
 
