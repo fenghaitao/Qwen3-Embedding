@@ -35,7 +35,7 @@ class Qwen3RerankerInferenceModel(CrossEncoder):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+        self.suffix = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
         self.max_length=kwargs.get('max_length', 8192)
         self.suffix_tokens = self.tokenizer.encode(self.suffix, add_special_tokens=False)
         # Cache commonly used token IDs
