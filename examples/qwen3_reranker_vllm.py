@@ -34,7 +34,7 @@ class Qwen3Rerankervllm(CrossEncoder):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+        self.suffix = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
         self.max_length=kwargs.get('max_length', 8192)
         self.suffix_tokens = self.tokenizer.encode(self.suffix, add_special_tokens=False)
         self.true_token = self.tokenizer("yes", add_special_tokens=False).input_ids[0]
