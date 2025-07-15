@@ -124,12 +124,14 @@ batch_dict = tokenizer(
     return_tensors="pt",
 )
 batch_dict.to(model.device)
-outputs = model(**batch_dict)
-embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+with torch.no_grad():
+    outputs = model(**batch_dict)
+    embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
 
-# normalize embeddings
-embeddings = F.normalize(embeddings, p=2, dim=1)
-scores = (embeddings[:2] @ embeddings[2:].T)
+    # normalize embeddings
+    embeddings = F.normalize(embeddings, p=2, dim=1)
+    scores = (embeddings[:2] @ embeddings[2:].T)
+
 print(scores.tolist())
 # [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
 ```
@@ -195,14 +197,16 @@ documents = [
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
 ]
 
-# Encode the queries and documents. Note that queries benefit from using a prompt
-# Here we use the prompt called "query" stored under `model.prompts`, but you can
-# also pass your own prompt via the `prompt` argument
-query_embeddings = model.encode(queries, prompt_name="query")
-document_embeddings = model.encode(documents)
+with torch.no_grad():
+    # Encode the queries and documents. Note that queries benefit from using a prompt
+    # Here we use the prompt called "query" stored under `model.prompts`, but you can
+    # also pass your own prompt via the `prompt` argument
+    query_embeddings = model.encode(queries, prompt_name="query")
+    document_embeddings = model.encode(documents)
 
-# Compute the (cosine) similarity between the query and document embeddings
-similarity = model.similarity(query_embeddings, document_embeddings)
+    # Compute the (cosine) similarity between the query and document embeddings
+    similarity = model.similarity(query_embeddings, document_embeddings)
+
 print(similarity)
 # tensor([[0.7646, 0.1414], [0.1355, 0.6000]])
 ```
