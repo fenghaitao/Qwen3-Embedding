@@ -26,6 +26,7 @@ pip install flash-attn --no-build-isolation
 ```
 
 ## Embedding Training
+
 ### Data Preparation
 
 Different loss types affect the dataset input format. Using the following data format as an example:
@@ -90,68 +91,75 @@ swift sft \
     --deepspeed zero3
 ```
 
-## Reranker Training (LoRA)
+## Reranker Training
+
 ### Data Preparation
 
-The original data format:
+#### Common Original Data Format
 
-```json
-{"query": "sentence1", "response": "sentence1-positive", "rejected_response":  ["sentence1-negative1", "sentence1-negative2", ...]}
+```json lines
+{"query": "query", "positive": ["relevant_doc1", "relevant_doc2", ...], "negative": ["irrelevant_doc1", "irrelevant_doc2", ...]}
 ```
-The processed data format:
-```json
-{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence1 \n<Document>: sentence1-positive ", "output": "<think>\n\n</think>\n\nyes"}
-{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence1 \n<Document>: sentence1-negative1 ", "output": "<think>\n\n</think>\n\nno"}
-{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence1 \n<Document>: sentence1-negative2 ", "output": "<think>\n\n</think>\n\nno"}
-{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence2 \n<Document>: sentence2-positive ", "output": "<think>\n\n</think>\n\nyes"}
-{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence2 \n<Document>: sentence2-negative1 ", "output": "<think>\n\n</think>\n\nno"}
-{"system": "Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".", "input": "<Instruct>: Given a search query, retrieve relevant passages that answer the query'\n<Query>: sentence2 \n<Document>: sentence2-negative2 ", "output": "<think>\n\n</think>\n\nno"}
+
+> Reference: [MTEB/scidocs-reranking](https://www.modelscope.cn/datasets/MTEB/scidocs-reranking)
+
+#### Converted Data Format
+
+```json lines
+{"query": "query", "response": "relevant_doc1", "rejected_response": ["irrelevant_doc1", "irrelevant_doc2", ...]}
+{"query": "query", "response": "relevant_doc2", "rejected_response": ["irrelevant_doc1", "irrelevant_doc2", ...]}
 ...
 ```
+
+> The final converted data format is required, developers can build their own dataset or reuse [MTEBRerankPreprocessor](https://github.com/modelscope/ms-swift/blob/main/swift/llm/dataset/dataset/llm.py#L381) to convert data format.
+
+### Loss Types
+
+SWIFT supports two loss types for reranker training: pointwise loss and listwise loss.
+
+#### Pointwise Loss
+Treats ranking as binary classification for each query-document pair:
+- **Loss Function**: Binary cross-entropy
+- **Approach**: Independent judgment for each pair
+- **Environment Variables**:
+  - `GENERATIVE_RERANKER_POSITIVE_TOKEN`: Positive token (default: "yes")
+  - `GENERATIVE_RERANKER_NEGATIVE_TOKEN`: Negative token (default: "no")
+
+#### Listwise Loss
+Treats ranking as multi-classification among candidate documents:
+- **Loss Function**: Multi-class cross-entropy
+- **Approach**: Learn relative ranking relationships
+- **Environment Variables**:
+  - `LISTWISE_RERANKER_TEMPERATURE`: Listwise temperature (default: 1.0)
+  - `LISTWISE_RERANKER_MIN_GROUP_SIZE`: Minimum group size (default: 2)
+
 ### Complete Training Command
 
-The complete training command is as follows:
+Example for training a Qwen3-Reranker model using pointwise loss:
+
 ```shell
-nproc_per_node=8
+nproc_per_node=4
 NPROC_PER_NODE=$nproc_per_node \
 swift sft \
-    --model Qwen/Qwen3-Reranker-0.6 \
-    --dataset /path/data/qwen3_rerank.json \
-    --train_type lora \
-    --model_type qwen3 \
+    --model Qwen/Qwen3-Reranker-4B \
+    --task_type generative_reranker \
+    --loss_type generative_reranker \
+    --train_type full \
+    --dataset MTEB/scidocs-reranking \
     --split_dataset_ratio 0.05 \
-    --torch_dtype bfloat16 \
-    --lora_rank 8 \
-    --lora_alpha 32 \
-    --target_modules all-linear \
     --eval_strategy steps \
     --output_dir output \
-    --max_steps 1000 \
     --eval_steps 100 \
-    --num_train_epochs 4 \
-    --save_steps 100 \
-    --per_device_train_batch_size 4 \
-    --per_device_eval_batch_size 4 \
-    --gradient_accumulation_steps 4 \
+    --num_train_epochs 1 \
+    --save_steps 200 \
+    --per_device_train_batch_size 2 \
+    --per_device_eval_batch_size 2 \
+    --gradient_accumulation_steps 8 \
     --learning_rate 6e-6 \
-    --loss_scale ignore_empty_think \
-    --system 'Judge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".' \
-    --warmup_ratio 0.05 
-```
-The `qwen3_rank.json` file is the data file obtained after processing in the Data Preparation stage.
-
-If you use LoRA for training(`--train_type lora`), you can use SWIFT to merge the LoRA weights back into the model for inference:
-
-```shell
-swift export --adapters /path/of/output/ckpt-xxx --merge_lora true
+    --label_names labels \
+    --dataloader_drop_last true
 ```
 
 ## Inference and Deployment
 
 SWIFT's support for inference and deployment of the Qwen3-Embedding series models is currently under development. In the meantime, users can directly use the [inference code from the ModelCard](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B#sentence-transformers-usage).
-
-## Some Code Addresses
-
-1. [Embedding dataset encode](https://github.com/modelscope/ms-swift/blob/main/swift/llm/template/base.py#L338)
-2. [Embedding dataset data collator](https://github.com/modelscope/ms-swift/blob/main/swift/llm/template/base.py#L1313)
-3. [Embedding loss](https://github.com/modelscope/ms-swift/blob/main/swift/plugin/loss.py#L272)
