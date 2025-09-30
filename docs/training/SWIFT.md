@@ -32,13 +32,13 @@ pip install flash-attn --no-build-isolation
 Different loss types affect the dataset input format. Using the following data format as an example:
 
 ```json
-# sample without rejected_response
-{"query": "sentence1", "response": "sentence1-positive"}
-# sample with multiple rejected_response
-{"query": "sentence1", "response": "sentence1-positive", "rejected_response":  ["sentence1-negative1", "sentence1-negative2", ...]}
+# sample without hard negatives
+{"messages": [{"role": "user", "content": "sentence1"}], "positive_messages": [[{"role": "user", "content": "sentence2"}]]}
+# sample with multiple hard negatives
+{"messages": [{"role": "user", "content": "sentence1"}], "positive_messages": [[{"role": "user", "content": "sentence2"}]], "negative_messages": [[{"role": "user", "content": "sentence3"}], [{"role": "user", "content": "sentence4"}]]}
 ```
 
-The above data format is used when the loss is `infonce`. This loss uses `response (positive)` and `query (anchor)` for positive training, and uses `rejected_response (negatives)` for negative training.
+The above data format is used when the loss is `infonce`. This loss uses `positive_messages (positive)` and `messages (anchor)` for positive training, and uses `negative_messages (negatives)` for negative training.
 
 ### Loss Types
 
@@ -50,12 +50,12 @@ Infonce loss has several adjustable environment variables:
 - INFONCE_HARD_NEGATIVES: Pads negatives (repeated sampling) or truncates them to ensure the same number of negatives for each sample. Default is `False`.
 - INFONCE_MASK_FAKE_NEGATIVE: If negatives exist with similarity greater than positive similarity + `0.1`, mask them to prevent false negatives. Default is `False`.
 
-By default, each row in the dataset can have any number of rejected_responses or none at all.
+By default, each row in the dataset can have any number of negative_messages or none at all.
 
 Other loss types can also be used for training, such as `--loss_type cosine_similarity`, where the dataset format is different:
 
 ```json
-{"query": "sentence1", "response": "sentence2", "label": 0.8}
+{"messages": [{"role": "user", "content": "sentence1"}], "positive_messages": [[{"role": "user", "content": "sentence2"}]], "label": 0.8}
 ```
 
 Under this loss, the label field is a float type marking the similarity value between two sentences.
@@ -95,23 +95,24 @@ swift sft \
 
 ### Data Preparation
 
-#### Common Original Data Format
+The reranker training data format is similar to embedding training but focuses on ranking relationships between query-document pairs. Using the following data format as an example:
 
 ```json lines
-{"query": "query", "positive": ["relevant_doc1", "relevant_doc2", ...], "negative": ["irrelevant_doc1", "irrelevant_doc2", ...]}
+{"messages": [{"role": "user", "content": "query"}], "positive_messages": [[{"role": "assistant", "content": "relevant_doc1"}],[{"role": "assistant", "content": "relevant_doc2"}]], "negative_messages": [[{"role": "assistant", "content": "irrelevant_doc1"}],[{"role": "assistant", "content": "irrelevant_doc2"}], ...]}
 ```
 
-> Reference: [MTEB/scidocs-reranking](https://www.modelscope.cn/datasets/MTEB/scidocs-reranking)
+**Field Description:**
+- `messages`: Query text
+- `positive_messages`: List of positive documents relevant to the query, supports multiple positive examples
+- `negative_messages`: List of negative documents irrelevant to the query, supports multiple negative examples
 
-#### Converted Data Format
+**Environment Variable Configuration:**
+- `MAX_POSITIVE_SAMPLES`: Maximum number of positive examples per query (default: 1)
+- `MAX_NEGATIVE_SAMPLES`: Maximum number of negative examples per query (default: 7)
 
-```json lines
-{"query": "query", "response": "relevant_doc1", "rejected_response": ["irrelevant_doc1", "irrelevant_doc2", ...]}
-{"query": "query", "response": "relevant_doc2", "rejected_response": ["irrelevant_doc1", "irrelevant_doc2", ...]}
-...
-```
-
-> The final converted data format is required, developers can build their own dataset or reuse [MTEBRerankPreprocessor](https://github.com/modelscope/ms-swift/blob/main/swift/llm/dataset/dataset/llm.py#L381) to convert data format.
+> By default, `MAX_POSITIVE_SAMPLES` positive examples and `MAX_NEGATIVE_SAMPLES` negative examples will be extracted from each data item. Each positive example will be grouped with `MAX_NEGATIVE_SAMPLES` negative examples to form a group. Therefore, each data item will be expanded into `MAX_POSITIVE_SAMPLES`x`(1 + MAX_NEGATIVE_SAMPLES)` data points.
+> If the number of positive/negative examples in the data is insufficient, all positive/negative examples will be used. If the number of positive and negative examples in the data exceeds `MAX_POSITIVE_SAMPLES` and `MAX_NEGATIVE_SAMPLES`, random sampling will be performed.
+> **IMPORTANT**: The expanded data will be placed in the same batch. Therefore, the effective batch size on each device will be `per_device_train_batch_size` × `MAX_POSITIVE_SAMPLES` × (1 + `MAX_NEGATIVE_SAMPLES`). Please adjust your `per_device_train_batch_size` accordingly to avoid out-of-memory errors.
 
 ### Loss Types
 
@@ -162,4 +163,6 @@ swift sft \
 
 ## Inference and Deployment
 
-SWIFT's support for inference and deployment of the Qwen3-Embedding series models is currently under development. In the meantime, users can directly use the [inference code from the ModelCard](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B#sentence-transformers-usage).
+SWIFT now supports for both embedding and reranker models. Refer to the official examples for full options:
+- Embedding example: [ms-swift/examples/deploy/embedding](https://github.com/modelscope/ms-swift/tree/main/examples/deploy/embedding)
+- Reranker example: [ms-swift/examples/deploy/reranker](https://github.com/modelscope/ms-swift/tree/main/examples/deploy/reranker)
