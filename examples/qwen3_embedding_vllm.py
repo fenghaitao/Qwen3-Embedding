@@ -36,16 +36,20 @@ class Qwen3EmbeddingVllm():
 if __name__ == "__main__":
     model_path = "Qwen/Qwen3-Embedding-0.6B"
     model = Qwen3EmbeddingVllm(model_path)
-    queries = ['What is the capital of China?', 'Explain gravity']
-    documents = [
-        "The capital of China is Beijing.",
-        "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
-    ]
-    dim = 1024
-    query_outputs = model.encode(queries, is_query=True, dim=dim)
-    doc_outputs = model.encode(documents, dim=dim)
-    print('query outputs', query_outputs)
-    print('doc outputs', doc_outputs)
-    scores = (query_outputs @ doc_outputs.T) * 100
-    print(scores.tolist())
-    model.stop()
+    try:
+        queries = ['What is the capital of China?', 'Explain gravity']
+        documents = [
+            "The capital of China is Beijing.",
+            "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
+        ]
+        dim = 1024
+        query_outputs = model.encode(queries, is_query=True, dim=dim)
+        doc_outputs = model.encode(documents, dim=dim)
+        print('query outputs', query_outputs)
+        print('doc outputs', doc_outputs)
+        scores = (query_outputs @ doc_outputs.T) * 100
+        print(scores.tolist())
+    finally:
+        model.stop()
+        # Explicitly delete the model to ensure cleanup
+        del model

@@ -91,15 +91,19 @@ class Qwen3Rerankervllm(CrossEncoder):
 
 if __name__ == '__main__':
     model = Qwen3Rerankervllm(model_name_or_path='Qwen/Qwen3-Reranker-0.6B', instruction="Retrieval document that can answer user's query", max_length=2048)
-    queries = ['What is the capital of China?', 'Explain gravity']
-    documents = [
-        "The capital of China is Beijing.",
-        "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
-    ]
-    pairs = list(zip(queries, documents))
-    new_scores = model.compute_scores(pairs)
-    print('scores', new_scores)
-    model.stop()
+    try:
+        queries = ['What is the capital of China?', 'Explain gravity']
+        documents = [
+            "The capital of China is Beijing.",
+            "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
+        ]
+        pairs = list(zip(queries, documents))
+        new_scores = model.compute_scores(pairs)
+        print('scores', new_scores)
+    finally:
+        model.stop()
+        # Explicitly delete the model to ensure cleanup
+        del model
 
 
 
