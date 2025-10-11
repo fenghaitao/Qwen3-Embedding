@@ -61,6 +61,12 @@ Qwen3-Embedding model series shares the multilingual support capabilities of the
 
 ## Usage
 
+To set up the environment for this project, we recommend using `uv` to create a virtual environment with Python 3.12:
+
+```
+uv venv --python 3.12
+```
+
 With Transformers versions earlier than 4.51.0, you may encounter the following error:
 ```
 KeyError: 'qwen3'
