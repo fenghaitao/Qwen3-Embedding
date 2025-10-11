@@ -1,5 +1,5 @@
 # Requirements for CPU-only installation (NVIDIA CUDA packages excluded)
-# Install with: uv pip install --torch-backend cpu -e .
+# Install with: uv pip install --torch-backend cpu -r ./requirements.txt
 
 aiohappyeyeballs==2.6.1
 aiohttp==3.12.15
